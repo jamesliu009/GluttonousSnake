@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  	<meta charset="utf-8">
+	<title>Gluttonous Snake</title>
+	<style type="text/css">
+		body{margin:0;}
+	</style>
+</head>
+<body>
+<script type="text/javascript">
+	//create map
+	function Map(){
+		//structure
+		this.width = 600;
+		this.height = 400;
+		this.backgroundColor = 'gray';
+		this.ditu = null;
+
+		//method
+		//create map and show
+		// this.show = function(){
+
+		// }
+		if(!Map.prototype.show){
+			Map.prototype.show = function(){
+				//create div
+				var div = document.createElement('div');
+				//set style
+				div.style.width = this.width + 'px';
+				div.style.height = this.height + 'px';
+				div.style.backgroundColor = this.backgroundColor;
+				//show in the page
+				document.body.appendChild(div);
+				//store the div inorder to use after
+				this.ditu = div;
+			}
+		}
+		
+	}
+	// Map.prototype.show = function(){
+
+	// }
+	var map = new Map();
+	map.show();
+	// console.log(map.ditu);
+	
+	// create food
+	function Food(map){
+		//structure
+		this.width = 20;
+		this.height = 20;
+		this.backgroundColor = 'green';
+		this.x = 0;
+		this.y = 0;
+		this.position = 'absolute';
+		this.shiwu = null;
+		//method
+		//create div and show
+		if(!Food.prototype.show){
+			Food.prototype.show = function(){
+				//show and refresh
+				if(!this.shiwu){
+					//div not create
+					//create div
+					var div = document.createElement('div');
+					//set style
+					div.style.width = this.width + 'px';
+					div.style.height = this.height + 'px';
+					div.style.backgroundColor = this.backgroundColor;
+					div.style.position = 'absolute';
+					//show in the page
+					map.ditu.appendChild(div);
+					//store food div
+					this.shiwu = div;
+				}
+				
+				//position generate randomly x and y
+				//x 0-30（exclude 30）*20(food width)，map width
+				//y 0-20（exclude 20）*20（food height），equal to map height
+				this.x = Math.floor( Math.random() * (map.width/this.width) );
+				this.y = Math.floor( Math.random() * (map.height/this.height) );
+				//set position style
+				this.shiwu.style.left = this.x * this.width + 'px';
+				this.shiwu.style.top = this.y * this.height + 'px';
+				
+			}
+		}
+	}
+
+	var food = new Food(map);
+	food.show();
+
+	//create snake
+	function Snake(){
+		//structure
+		//body [[x,y,colour,div], [x,y,colour,null], [x,y,colour,null]]
+		//snake level，head point to right
+		this.body = [[5, 3, 'red', null], [4, 3, 'blue', null], [3, 3, 'blue', null]];
+		this.width = 20;
+		this.height = 20;
+		this.position = 'absolute';
+		this.direction = 'right';
+		this.canChange = false;//can change direction
+		//method show and move
+		if(!Snake.prototype.show){
+			Snake.prototype.show = function(){
+				//create each body div
+				for(var i=0; i<this.body.length; i++){
+					// this.body[i] //each body information [5, 3, 'red']
+					if(!this.body[i][3]){
+						//for the div never create before
+						var div = document.createElement('div');
+						//set style
+						div.style.width = this.width + 'px';
+						div.style.height = this.height + 'px';
+						div.style.position = this.position;
+						//show in the map
+						map.ditu.appendChild(div);
+						this.body[i][3] = div;
+					}
+					
+					this.body[i][3].style.backgroundColor = this.body[i][2];
+					this.body[i][3].style.left = this.body[i][0] * this.width + 'px';
+					this.body[i][3].style.top = this.body[i][1] * this.height + 'px';
+				
+				}
+				//finish and can change direction
+				this.canChange = true;
+			}
+			//let snake move and the behind body will become fore body
+			//move from snake end and head control the direction
+			Snake.prototype.move = function(){
+				//loop change each body position
+				// for(var i=0; i<this.body.length; i++){
+				// 	 // 0 1 2
+				// 	// this.body[this.body.length-1-i]
+				// }
+				for(var i=this.body.length-1; i>0; i--){
+					// this.body[i]
+					this.body[i][0] = this.body[i-1][0];
+					this.body[i][1] = this.body[i-1][1];
+				}
+				//head control the direction
+				if(this.direction == 'right'){
+					//head x +1
+					this.body[0][0] += 1;
+				}else if(this.direction == 'left'){
+					//head x -1
+					this.body[0][0] -= 1;
+				}else if(this.direction == 'down'){
+					//head y+1
+					this.body[0][1] += 1;
+				}else if(this.direction == 'up'){
+					//head y-1
+					this.body[0][1] -= 1;
+				}
+				//judge the border
+				if(this.body[0][0] < 0 || this.body[0][0] > 29 || this.body[0][1] < 0 || this.body[0][1] > 19){
+					//game over and stop the timer
+					clearInterval(timer);
+					alert('game over');
+					return;
+				}
+				//judge the head is coincide with the body
+				for(var i=1; i<this.body.length; i++){
+					if(this.body[0][0] == this.body[i][0] && this.body[0][1] == this.body[i][1]){
+						//head is coincide with the body
+						////game over and stop the timer
+						clearInterval(timer);
+						alert('game over');
+						return;
+					}
+				}
+				//show again
+				this.show();
+				//judge if eat the food
+				if(this.body[0][0] == food.x && this.body[0][1] == food.y){
+					//eat food this.body increase
+					this.body[this.body.length] = [0, 0, 'blue', null];
+					// this.body.push([0, 0, '', null]);
+					//food refresh
+					food.show();
+					//eat food the speed increase
+					if(t > 150){
+						t -= 50;
+						setTimer();
+					}
+				}
+			}
+		}
+	}
+	var snake = new Snake();
+	snake.show();
+
+	//let snake move and set the timer
+	var t = 500;
+	var timer;
+	function setTimer(){
+		//stop the previous timer
+		clearInterval(timer);
+		//set the timer
+		timer = setInterval(function(){
+			snake.move();
+		}, t);
+	}
+	setTimer();
+	
+
+	//let snake change direction
+	//Binding keyboard events
+	window.onkeyup = function(e){
+		var evt = e || window.event;
+		if(!snake.canChange){
+			//can not change direction
+			return;
+		}
+		// console.log(evt);// left 37 up38 right39 down40
+		if(e.keyCode == 37 && snake.direction != 'right'){
+			snake.direction = 'left';
+		}else if(e.keyCode == 38 && snake.direction != 'down'){
+			snake.direction = 'up';
+		}else if(e.keyCode == 39 && snake.direction != 'left'){
+			snake.direction = 'right';
+		}else if(e.keyCode == 40 && snake.direction != 'up'){
+			snake.direction = 'down';
+		}
+
+		snake.canChange = false;
+	}
+</script>
+</body>
+</html>
